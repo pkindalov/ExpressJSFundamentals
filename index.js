@@ -9,13 +9,6 @@ http
           break
         }
       }
-
-      // res.writeHead(200, {
-      //   'Content-type': 'text/plain'
-      // })
-
-      // res.write('Hello!')
-      // res.end()
     })
     .listen(port)
 

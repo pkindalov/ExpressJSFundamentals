@@ -1,0 +1,25 @@
+{
+  "name": "shop-stop-lab",
+  "version": "0.0.1",
+  "description": "“Shop Stop” is very simple product catalog website",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pkindalov/ExpressJSFundamentals.git"
+  },
+  "keywords": [
+    "shop",
+    "stop",
+    "lab",
+    "exercise"
+  ],
+  "author": "r3v3nan7",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pkindalov/ExpressJSFundamentals/issues"
+  },
+  "homepage": "https://github.com/pkindalov/ExpressJSFundamentals#readme"
+}

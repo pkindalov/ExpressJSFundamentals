@@ -1,24 +1,24 @@
-let products = []
-let count = 1
+let products = [];
+let count = 1;
 
-module.exports.products = {}
+module.exports.products = {};
 
 module.exports.products.getAll = () => {
-  return products
-}
+  return products;
+};
 
 module.exports.products.add = (product) => {
-  product.id = count++
-  products.push(product)
-}
+  product.id = count++;
+  products.push(product);
+};
 
 module.exports.products.findByName = (name) => {
-  let product = null
+  let product = null;
   for (let p of products) {
     if (p === name) {
-      return p
+      return p;
     }
   }
 
-  return product
-}
+  return product;
+};

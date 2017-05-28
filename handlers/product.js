@@ -1,46 +1,101 @@
-const url = require('url')
-const database = require('../config/database')
-const fs = require('fs')
-const path = require('path')
-const qs = require('querystring')
+const url = require('url');
+const database = require('../config/database');
+const fs = require('fs');
+const path = require('path');
+const qs = require('querystring');
+const multiparty = require('multiparty');
+const shortid = require('shortid');
 
 module.exports = (req, res) => {
-  req.pathname = req.pathname || url.parse(req.url.pathname)
+  req.pathname = req.pathname || url.parse(req.url.pathname);
 
   if (req.pathname === ('/product/add') && req.method === 'GET') {
     let filePath = path.normalize(
-      path.join(__dirname, '../views/products/add.html'))
+      path.join(__dirname, '../views/products/add.html'));
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        console.log(err)
-        return
+        console.log(err);
+        return;
       }
 
       res.writeHead(200, {
         'Content-Type': 'text/html'
-      })
+      });
 
-      res.write(data)
-      res.end()
-    })
+      res.write(data);
+      res.end();
+    });
   } else if (req.pathname === ('/product/add') && req.method === 'POST') {
-    let dataString = ''
+    let form = new multiparty.Form();
 
-    req.on('data', (data) => {
-      dataString += data
-    })
+    form.on('part', (part) => {
+      if (part.filename) {
+        let dataString = '';
 
-    req.on('end', () => {
-      let product = qs.parse(dataString)
-      database.products.add(product)
+        part.setEncoding('binary');
+        part.on('data', (data) => {
+          dataString += data;
+        });
 
-      res.writeHead(302, {
+        part.on('end', () => {
+          let fileName = shortid.generate();
+          let filePath = '/content/images/' + fileName;
+          req.product.image = filePath;
+
+          fs.writeFile(
+            `.${filePath}`, dataString, {encoding: 'ascii'}, (err) => {
+              if(err){
+                console.log(err);
+                return;
+              }
+            });
+
+        });
+
+
+      }else{
+        part.setEncoding('utf-8');
+        let field = '';
+      
+        part.on('data', (data) => {
+          field += data;
+        });
+
+
+        part.on('end', () => {
+          req.product[part.name] = field;
+        });
+      }
+    });
+
+
+    form.on('close', () => {
+      req.database.products.add(product);
+       res.writeHead(302, {
         Location: '/'
-      })
+      });
+      res.end();
+    });
 
-      res.end()
-    })
-  } else {
-    return true
-  }
-}
+    form.parse(req);
+
+    // part.on('end', () => {
+
+    // })
+
+    // req.on('end', () => {
+    //   // let product = qs.parse(dataString)
+    //   // database.products.add(product)
+
+    //   res.writeHead(302, {
+    //     Location: '/'
+    //   });
+
+    //   res.end();
+    // });
+  } 
+  // else {
+  //   return true;
+  // }
+};
+

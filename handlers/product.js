@@ -2,7 +2,6 @@ const url = require('url');
 const database = require('../config/database');
 const fs = require('fs');
 const path = require('path');
-const qs = require('querystring');
 const multiparty = require('multiparty');
 const shortid = require('shortid');
 
@@ -15,6 +14,12 @@ module.exports = (req, res) => {
     fs.readFile(filePath, (err, data) => {
       if (err) {
         console.log(err);
+
+        res.writeHead(404, {
+          'Content-Type': 'text/plain'
+        });
+        res.write('404 not Found!');
+        res.end();
         return;
       }
 
@@ -27,6 +32,7 @@ module.exports = (req, res) => {
     });
   } else if (req.pathname === ('/product/add') && req.method === 'POST') {
     let form = new multiparty.Form();
+    let product = {};
 
     form.on('part', (part) => {
       if (part.filename) {
@@ -39,63 +45,40 @@ module.exports = (req, res) => {
 
         part.on('end', () => {
           let fileName = shortid.generate();
-          let filePath = '/content/images/' + fileName;
-          req.product.image = filePath;
+          let filePath = path.normalize(path.join('/content/images', fileName + part.filename));
+
+          product.image = filePath;
 
           fs.writeFile(
             `.${filePath}`, dataString, {encoding: 'ascii'}, (err) => {
-              if(err){
-                console.log(err);
-                return;
+              if (err) {
+                throw err;
               }
             });
-
         });
-
-
-      }else{
+      } else {
         part.setEncoding('utf-8');
         let field = '';
-      
+
         part.on('data', (data) => {
           field += data;
         });
 
 
         part.on('end', () => {
-          req.product[part.name] = field;
+          product[part.name] = field;
         });
       }
     });
-
-
     form.on('close', () => {
-      req.database.products.add(product);
-       res.writeHead(302, {
+      database.products.add(product);
+      res.writeHead(302, {
         Location: '/'
       });
       res.end();
     });
-
     form.parse(req);
-
-    // part.on('end', () => {
-
-    // })
-
-    // req.on('end', () => {
-    //   // let product = qs.parse(dataString)
-    //   // database.products.add(product)
-
-    //   res.writeHead(302, {
-    //     Location: '/'
-    //   });
-
-    //   res.end();
-    // });
-  } 
-  // else {
-  //   return true;
-  // }
+  } else {
+    return true;
+  }
 };
-
